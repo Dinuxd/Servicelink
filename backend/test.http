@@ -1,0 +1,129 @@
+@host = http://localhost:8080
+
+### Register (form-urlencoded)
+POST {{host}}/api/auth/register
+Content-Type: application/x-www-form-urlencoded
+
+name=Alice Smith&email=alice@example.com&password=Password123!
+
+### Login
+@name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice@example.com",
+  "password": "Password123!"
+}
+
+@token = {{login.response.body.token}}
+
+### Who am I
+GET {{host}}/api/users/me
+Authorization: Bearer {{token}}
+
+### Public: list services (paged + filters)
+GET {{host}}/api/listings?page=0&size=12&q=design&minPrice=50&maxPrice=500
+
+### Create a service (requires auth)
+POST {{host}}/api/listings
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Web Design Package",
+  "description": "Landing page + branding + responsive design",
+  "price": 499.99
+}
+
+### Create booking
+POST {{host}}/api/bookings
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "listingId": 1,
+  "scheduledAt": "2025-11-07T09:00:00",
+  "address": "221B Baker St",
+  "notes": "Please call upon arrival"
+}
+
+### My bookings as customer
+GET {{host}}/api/bookings?as=customer
+Authorization: Bearer {{token}}
+
+### Change booking status
+PATCH {{host}}/api/bookings/1/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "CONFIRMED"
+}
+
+### Reschedule booking
+PATCH {{host}}/api/bookings/1/reschedule
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "scheduledAt": "2025-11-07T10:00:00"
+}
+
+### Messages: list for a booking (needs auth)
+GET {{host}}/api/bookings/1/messages
+Authorization: Bearer {{token}}
+
+### Messages: post new message
+POST {{host}}/api/bookings/1/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "content": "Hello, can we discuss details?"
+}
+
+### Public: provider availability
+GET {{host}}/api/providers/2/availability?from=2025-11-07T00:00:00&to=2025-11-08T00:00:00
+
+### Admin: list users (requires admin token)
+GET {{host}}/api/admin/users?page=0&size=10
+Authorization: Bearer {{token}}
+
+### Admin: create category
+POST {{host}}/api/admin/categories
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Cleaning",
+  "icon": "broom"
+}
+
+### Admin: list categories
+GET {{host}}/api/admin/categories?page=0&size=20
+Authorization: Bearer {{token}}
+
+### Public: categories
+GET {{host}}/api/categories
+
+### Booking by id (participants only)
+GET {{host}}/api/bookings/1
+Authorization: Bearer {{token}}
+
+### Messages
+GET {{host}}/api/bookings/1/messages
+Authorization: Bearer {{token}}
+POST {{host}}/api/bookings/1/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "content": "Follow-up message"
+}
+
+### Admin: users and categories
+GET {{host}}/api/admin/users
+Authorization: Bearer {{token}}
+GET {{host}}/api/admin/categories
+Authorization: Bearer {{token}}

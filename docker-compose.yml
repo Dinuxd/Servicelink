@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  db:
+    image: mysql:8.0
+    container_name: servicelink-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: servicelink
+      MYSQL_USER: sluser
+      MYSQL_PASSWORD: slpass
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - servicelink-mysql-data:/var/lib/mysql
+
+  mongo:
+    image: mongo:7
+    container_name: servicelink-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - servicelink-mongo-data:/data/db
+
+volumes:
+  servicelink-mysql-data:
+  servicelink-mongo-data:
