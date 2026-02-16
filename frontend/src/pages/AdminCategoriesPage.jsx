@@ -26,42 +26,44 @@ export default function AdminCategoriesPage() {
   });
 
   return (
-    <div className="sl-page-card-admin" style={{ maxWidth: 860, margin: '0 auto' }}>
-      <h1 className="sl-page-title">Admin · Categories</h1>
-      <div className="sl-page-subtitle">Manage how services are grouped in search.</div>
+    <div className="sl-page-container">
+      <div className="sl-page-card-admin" style={{ maxWidth: 860, margin: '0 auto' }}>
+        <h1 className="sl-page-title">Admin · Categories</h1>
+        <div className="sl-page-subtitle">Manage how services are grouped in search.</div>
 
-      <div className="sl-stack-h" style={{ marginTop: 16, marginBottom: 16 }}>
-        <input className="sl-input" placeholder="Name" value={form.name} onChange={e=>setForm({...form, name: e.target.value})} />
-        <input className="sl-input" placeholder="Icon" value={form.icon} onChange={e=>setForm({...form, icon: e.target.value})} />
-        <button className="sl-hero-cta-primary" onClick={()=>createMut.mutate()} disabled={createMut.isPending}>
-          {createMut.isPending ? 'Creating…' : 'Create'}
-        </button>
-      </div>
-
-      {(!data?.content || data.content.length === 0) && (
-        <div className="sl-empty">
-          No categories yet. Create the first category above.
+        <div className="sl-stack-h" style={{ marginTop: 16, marginBottom: 16 }}>
+          <input className="sl-input" placeholder="Name" value={form.name} onChange={e=>setForm({...form, name: e.target.value})} />
+          <input className="sl-input" placeholder="Icon" value={form.icon} onChange={e=>setForm({...form, icon: e.target.value})} />
+          <button className="sl-hero-cta-primary" onClick={()=>createMut.mutate()} disabled={createMut.isPending}>
+            {createMut.isPending ? 'Creating…' : 'Create'}
+          </button>
         </div>
-      )}
 
-      <div className="space-y-2">
-        {(data?.content || []).map(c => (
-          <div
-            key={c.id}
-            className="border rounded p-2 flex items-center justify-between"
-            style={{ background: 'rgba(15,23,42,0.9)', borderColor: 'rgba(148,163,184,0.55)' }}
-          >
-            <div>{c.name} {c.icon && <span style={{ marginLeft: 8 }}>{c.icon}</span>}</div>
-            <div className="sl-stack-h">
-              <button className="sl-hero-cta-secondary" onClick={() => updateMut.mutate({ id: c.id, name: c.name + ' *', icon: c.icon })}>
-                Edit sample
-              </button>
-              <button className="sl-hero-cta-secondary" style={{ color: '#fecaca' }} onClick={() => delMut.mutate(c.id)}>
-                Delete
-              </button>
-            </div>
+        {(!data?.content || data.content.length === 0) && (
+          <div className="sl-empty">
+            No categories yet. Create the first category above.
           </div>
-        ))}
+        )}
+
+        <div className="space-y-2">
+          {(data?.content || []).map(c => (
+            <div
+              key={c.id}
+              className="border rounded p-2 flex items-center justify-between sl-surface-panel"
+              style={{ background: 'rgba(15,23,42,0.9)', borderColor: 'rgba(148,163,184,0.35)' }}
+            >
+              <div>{c.name} {c.icon && <span style={{ marginLeft: 8 }}>{c.icon}</span>}</div>
+              <div className="sl-stack-h">
+                <button className="sl-hero-cta-secondary" onClick={() => updateMut.mutate({ id: c.id, name: c.name + ' *', icon: c.icon })}>
+                  Edit sample
+                </button>
+                <button className="sl-hero-cta-secondary" style={{ color: '#fecaca' }} onClick={() => delMut.mutate(c.id)}>
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

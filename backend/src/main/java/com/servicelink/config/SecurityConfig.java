@@ -1,7 +1,6 @@
 package com.servicelink.config;
 
 import com.servicelink.security.JwtAuthFilter;
-import com.servicelink.security.MongoUserDetailsService;
 import com.servicelink.security.JwtUtil;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
@@ -49,6 +48,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/listings/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/providers/{providerId}/availability").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/providers/*/availability").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
@@ -61,11 +61,6 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
-    }
-
-    @Bean
-    public org.springframework.security.core.userdetails.UserDetailsService userDetailsService(MongoUserDetailsService mongoUserDetailsService) {
-        return mongoUserDetailsService;
     }
 
     @Bean

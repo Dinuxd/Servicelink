@@ -40,8 +40,8 @@ public class SecurityUserDetails implements UserDetails {
     @Override
     public String getUsername() {
         // Spring Security uses this for authentication principal
-        // We'll allow login by username or email, but return username here
-        return user.getUsername();
+        // We'll allow login by username or email; fall back to email when username is missing
+        return user.getUsername() != null ? user.getUsername() : user.getEmail();
     }
 
     @Override

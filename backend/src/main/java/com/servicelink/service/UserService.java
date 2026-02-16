@@ -31,14 +31,15 @@ public class UserService {
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("Email already in use");
         }
-        if (userRepository.existsByUsername(username)) {
+        if (username != null && userRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("Username already in use");
         }
         User user = new User();
         user.setId(seq.generateSequence("users"));
         user.setName(name);
         user.setEmail(email);
-        user.setUsername(username);
+        // Default username to email when not provided so Security principal is stable
+        user.setUsername(username != null ? username : email);
         user.setPassword(passwordEncoder.encode(password));
         user.setRoleNames(List.of(roleName));
         user.setActive(true);
@@ -49,8 +50,9 @@ public class UserService {
         return passwordEncoder;
     }
 
-    public User getByEmail(String email) {
-        return userRepository.findByEmail(email).orElse(null);
+    public User getByEmail(String identifier) {
+        // Accept either email or username for lookups since auth principal uses username
+        return userRepository.findByUsernameOrEmail(identifier, identifier).orElse(null);
     }
 
     public User getById(@NonNull Long id) {

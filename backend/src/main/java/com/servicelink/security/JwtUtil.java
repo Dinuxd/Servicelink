@@ -53,15 +53,23 @@ public class JwtUtil {
         Date now = new Date();
         Date exp = new Date(now.getTime() + (expirationSeconds * 1000));
         Map<String, Object> claims = new HashMap<>();
+        String subject = userDetails.getUsername();
         if (userDetails instanceof SecurityUserDetails sud) {
             claims.put("userId", sud.getId());
             claims.put("username", sud.getUsernameField());
             claims.put("email", sud.getEmail());
             claims.put("roleNames", sud.getRoleNames());
+            // ensure subject never null by falling back to email
+            if (subject == null) {
+                subject = sud.getEmail();
+            }
+        }
+        if (subject == null) {
+            throw new IllegalStateException("Cannot generate JWT without a subject");
         }
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(userDetails.getUsername())
+                .setSubject(subject)
                 .setIssuedAt(now)
                 .setExpiration(exp)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
