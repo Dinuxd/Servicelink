@@ -1,2 +1,15 @@
 # npm lockfile (pnpm project)
 package-lock.json
+
+# local backups / caches
+mongo-backup/
+.npm-cache/
+**/.npm-cache/
+node_modules/
+dist/
+build/
+.env
+.env.*
+*.dump
+*.archive
+*.bson
