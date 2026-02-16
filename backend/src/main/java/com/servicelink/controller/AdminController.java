@@ -1,10 +1,14 @@
 package com.servicelink.controller;
 
 import com.servicelink.dto.UserDtos;
+import com.servicelink.dto.ListingDtos;
 import com.servicelink.model.ServiceCategory;
+import com.servicelink.model.ServiceListing;
 import com.servicelink.model.User;
 import com.servicelink.repository.ServiceCategoryRepository;
+import com.servicelink.repository.ServiceListingRepository;
 import com.servicelink.repository.UserRepository;
+import com.servicelink.repository.BookingRepository;
 import com.servicelink.service.SequenceGeneratorService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -31,11 +35,15 @@ public class AdminController {
 
     private final UserRepository users;
     private final ServiceCategoryRepository categories;
+    private final ServiceListingRepository listings;
+    private final BookingRepository bookings;
     private final SequenceGeneratorService seq;
 
-    public AdminController(UserRepository users, ServiceCategoryRepository categories, SequenceGeneratorService seq) {
+    public AdminController(UserRepository users, ServiceCategoryRepository categories, ServiceListingRepository listings, BookingRepository bookings, SequenceGeneratorService seq) {
         this.users = users;
         this.categories = categories;
+        this.listings = listings;
+        this.bookings = bookings;
         this.seq = seq;
     }
 
@@ -47,6 +55,23 @@ public class AdminController {
         r.active = u.isActive();
         r.roles = u.getRoleNames();
         return r;
+    }
+
+    private ListingDtos.Response toListingDto(ServiceListing e) {
+        ListingDtos.Response dto = new ListingDtos.Response();
+        dto.id = e.getId();
+        dto.title = e.getTitle();
+        dto.description = e.getDescription();
+        dto.price = e.getPrice();
+        if (e.getOwner() != null) {
+            dto.ownerId = e.getOwner().getId();
+            dto.ownerName = e.getOwner().getName();
+        }
+        if (e.getCategory() != null) {
+            dto.categoryId = e.getCategory().getId();
+            dto.categoryName = e.getCategory().getName();
+        }
+        return dto;
     }
 
     @Operation(summary = "List users with optional role filter")
@@ -66,11 +91,51 @@ public class AdminController {
         return new PageImpl<>(Objects.requireNonNull(mapped), pageable, p.getTotalElements());
     }
 
+    @Operation(summary = "Admin stats")
+    @GetMapping("/stats")
+    public ResponseEntity<Object> stats() {
+        long totalUsers = users.count();
+        long activeUsers = users.findAll().stream().filter(User::isActive).count();
+        long disabledUsers = totalUsers - activeUsers;
+        long totalProviders = users.findAll().stream().filter(u -> u.getRoleNames() != null && u.getRoleNames().contains("ROLE_PROVIDER")).count();
+        long totalCustomers = users.findAll().stream().filter(u -> u.getRoleNames() != null && u.getRoleNames().contains("ROLE_USER")).count();
+        long totalListings = listings.count();
+        long totalCategories = categories.count();
+        long totalBookings = bookings.count();
+
+        var body = new java.util.HashMap<String, Object>();
+        body.put("totalUsers", totalUsers);
+        body.put("activeUsers", activeUsers);
+        body.put("disabledUsers", disabledUsers);
+        body.put("totalProviders", totalProviders);
+        body.put("totalCustomers", totalCustomers);
+        body.put("totalListings", totalListings);
+        body.put("activeListings", totalListings); // no active flag available
+        body.put("totalCategories", totalCategories);
+        body.put("totalBookings", totalBookings);
+        return ResponseEntity.ok(body);
+    }
+
+    @Operation(summary = "Admin list listings")
+    @GetMapping("/listings")
+    public Page<ListingDtos.Response> adminListings(Pageable pageable) {
+        Page<ServiceListing> p = listings.findAll(pageable);
+        return p.map(this::toListingDto);
+    }
+
+    @Operation(summary = "Admin delete listing")
+    @DeleteMapping("/listings/{id}")
+    public ResponseEntity<Void> deleteListing(@PathVariable long id) {
+        if (!listings.existsById(id)) return ResponseEntity.notFound().build();
+        listings.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
     public record ActiveResponse(Long id, boolean active) {}
 
     @Operation(summary = "Toggle user active flag")
     @PatchMapping("/users/{id}/toggle-active")
-    public ResponseEntity<ActiveResponse> toggleActive(@PathVariable @NonNull Long id) {
+    public ResponseEntity<ActiveResponse> toggleActive(@PathVariable long id) {
         return users.findById(id)
                 .map(u -> {
                     u.setActive(!u.isActive());
