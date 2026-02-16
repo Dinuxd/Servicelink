@@ -5,6 +5,7 @@
 - Name branches `feature/<area>-<short-desc>` where area is `admin|user|provider`.
 
 ## Workflow
+- Note: This project uses pnpm. Do not commit package-lock.json (npm lockfile).
 1) Sync: `git checkout main` then `git pull origin main`.
 2) Branch: `git checkout -b feature/<area>-<short-desc>`.
 3) Set correct author (see Identity below) before committing.

@@ -1,14 +1,24 @@
-# Admin-focused areas
-/backend/**                     @Dinuxd
-/frontend/src/components/Admin*/** @Dinuxd
-/frontend/src/pages/Admin*/**      @Dinuxd
+# Admin pages
+/frontend/src/pages/AdminCategoriesPage.jsx   @Dinuxd
+/frontend/src/pages/AdminUsersPage.jsx        @Dinuxd
+/frontend/src/pages/AdminDashboardPage.jsx    @Dinuxd
 
-# User-focused areas
-/frontend/src/pages/Auth*/**       @pamithabandara
-/frontend/src/pages/User*/**       @pamithabandara
-/frontend/src/components/landing/** @pamithabandara
+# Shared admin/provider management
+/frontend/src/pages/AdminListingsPage.jsx     @Dinuxd @pamithabandara
 
-# Provider/shared areas
-/frontend/src/pages/Provider*/**   @Dinuxd @pamithabandara
-/frontend/src/components/ui/**     @Dinuxd @pamithabandara
-/backend/**                        @Dinuxd @pamithabandara
+# User pages
+/frontend/src/pages/AuthLoginPage.jsx         @pamithabandara
+/frontend/src/pages/AuthRegisterPage.jsx      @pamithabandara
+/frontend/src/pages/ListingsPage.jsx          @pamithabandara
+/frontend/src/pages/ListingDetailPage.jsx     @pamithabandara
+/frontend/src/pages/CustomerBookingsPage.jsx  @pamithabandara
+/frontend/src/pages/BookingDetailPage.jsx     @pamithabandara
+/frontend/src/pages/PaymentPage.jsx           @pamithabandara
+
+# Provider pages (shared)
+/frontend/src/pages/ProviderDashboard.jsx     @Dinuxd @pamithabandara
+/frontend/src/pages/ProviderBookingsPage.jsx  @Dinuxd @pamithabandara
+/frontend/src/pages/ProviderAvailabilityPage.jsx @Dinuxd @pamithabandara
+
+# Backend (default owner until split)
+/backend/**                                   @Dinuxd
