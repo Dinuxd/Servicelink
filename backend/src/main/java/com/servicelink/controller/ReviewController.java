@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.lang.NonNull;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -43,6 +45,7 @@ public class ReviewController {
         out.rating = r.getRating();
         out.content = r.getContent();
         out.authorId = r.getBooking().getCustomer().getId();
+        out.authorName = r.getBooking().getCustomer().getName();
         out.createdAt = r.getCreatedAt();
         return out;
     }
@@ -56,17 +59,37 @@ public class ReviewController {
         Booking b = bookings.findById(bookingId).orElseThrow(() -> new IllegalArgumentException("Booking not found"));
         if (!b.getCustomer().getId().equals(me.getId())) return ResponseEntity.status(403).build();
         if (b.getStatus() != BookingStatus.COMPLETED) return ResponseEntity.badRequest().build();
+        if (reviews.existsByBooking_Id(bookingId)) return ResponseEntity.badRequest().build();
         Review r = new Review();
         r.setId(seq.generateSequence("reviews"));
         r.setBooking(b);
         r.setRating(req.rating);
         r.setContent(req.content);
-        return ResponseEntity.ok(toDto(reviews.save(r)));
+        return ResponseEntity.status(201).body(toDto(reviews.save(r)));
     }
 
     @Operation(summary = "Get reviews for a listing")
     @GetMapping("/listings/{id}/reviews")
     public List<ReviewDtos.Response> forListing(@PathVariable @NonNull Long id) {
         return reviews.findByBooking_Listing_Id(id).stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    @Operation(summary = "Can current user review this listing? Returns eligible bookingId if yes")
+    @GetMapping("/reviews/eligibility")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, Object>> eligibility(@RequestParam Long listingId, Authentication auth) {
+        User me = users.getByEmail(auth.getName());
+        List<Booking> completed = bookings.findByCustomer_IdAndListing_Id(me.getId(), listingId).stream()
+                .filter(b -> b.getStatus() == BookingStatus.COMPLETED)
+                .toList();
+        Optional<Booking> first = completed.stream()
+                .filter(b -> !reviews.existsByBooking_Id(b.getId()))
+                .findFirst();
+        boolean eligible = first.isPresent();
+        Long bookingId = first.map(Booking::getId).orElse(null);
+        Map<String, Object> body = new java.util.HashMap<>();
+        body.put("eligible", eligible);
+        body.put("bookingId", bookingId); // may be null when not eligible
+        return ResponseEntity.ok(body);
     }
 }

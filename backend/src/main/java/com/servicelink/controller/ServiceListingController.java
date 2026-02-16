@@ -32,12 +32,14 @@ public class ServiceListingController {
     private final ServiceCategoryRepository categories;
     private final UserService userService;
     private final ListingMapper mapper;
+    private final com.servicelink.service.SequenceGeneratorService seq;
 
-    public ServiceListingController(ServiceListingRepository repository, ServiceCategoryRepository categories, UserService userService, ListingMapper mapper) {
+    public ServiceListingController(ServiceListingRepository repository, ServiceCategoryRepository categories, UserService userService, ListingMapper mapper, com.servicelink.service.SequenceGeneratorService seq) {
         this.repository = repository;
         this.categories = categories;
         this.userService = userService;
         this.mapper = mapper;
+        this.seq = seq;
     }
 
     private ListingDtos.Response toDto(ServiceListing e) {
@@ -58,6 +60,20 @@ public class ServiceListingController {
         return new PageImpl<>(Objects.requireNonNull(mapped), pageable, pageData.getTotalElements());
     }
 
+    @GetMapping("/mine")
+    @PreAuthorize("hasRole('PROVIDER')")
+    public ResponseEntity<Page<ListingDtos.Response>> mine(@RequestParam(defaultValue = "0") int page,
+                                                           @RequestParam(defaultValue = "10") int size,
+                                                           Authentication auth) {
+        if (auth == null) return ResponseEntity.status(401).build();
+        User owner = userService.getByEmail(auth.getName());
+        if (owner == null) return ResponseEntity.status(401).build();
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ServiceListing> pageData = repository.findByOwnerId(owner.getId(), pageable);
+        List<ListingDtos.Response> mapped = pageData.getContent().stream().map(this::toDto).collect(Collectors.toList());
+        return ResponseEntity.ok(new PageImpl<>(Objects.requireNonNull(mapped), pageable, pageData.getTotalElements()));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ListingDtos.Response> byId(@PathVariable @NonNull Long id) {
         return repository.findById(id)
@@ -72,6 +88,7 @@ public class ServiceListingController {
         User owner = userService.getByEmail(auth.getName());
         if (owner == null) return ResponseEntity.status(401).build();
         ServiceListing listing = new ServiceListing();
+        listing.setId(seq.generateSequence("listings"));
         listing.setTitle(req.title);
         listing.setDescription(req.description);
         listing.setPrice(req.price);
