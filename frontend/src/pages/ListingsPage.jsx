@@ -30,7 +30,8 @@ export default function ListingsPage() {
   const skeletons = Array.from({ length: 6 });
 
   return (
-    <div className="sl-page-card">
+    <div className="sl-page-container">
+      <div className="sl-page-card">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 16, marginBottom: 20 }}>
         <div>
           <h1 className="sl-page-title">Browse services</h1>
@@ -76,7 +77,7 @@ export default function ListingsPage() {
                 </div>
                 <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem' }}>
                   <div>
-                    <div style={{ fontWeight: 600 }}>${'{'}item.price{'}'}</div>
+                    <div style={{ fontWeight: 600 }}>${item.price}</div>
                     <div className="sl-text-muted" style={{ fontSize: '0.75rem' }}>{item.categoryName || 'Uncategorized'}</div>
                   </div>
                   <Link className="sl-btn sl-btn-secondary" to={`/listings/${item.id}`}>
@@ -106,6 +107,7 @@ export default function ListingsPage() {
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }

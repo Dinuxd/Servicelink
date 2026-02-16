@@ -23,7 +23,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/bookings")
+// Support both canonical /api/bookings and a fallback /bookings in case a context-path adds /api
+@RequestMapping({"/api/bookings", "/bookings"})
 public class BookingController {
 
     private final BookingService bookingService;
@@ -39,12 +40,24 @@ public class BookingController {
     private BookingDtos.Response toDto(Booking b) {
         BookingDtos.Response r = new BookingDtos.Response();
         r.id = b.getId();
-        r.listingId = b.getListing().getId();
-        r.customerId = b.getCustomer().getId();
+        r.listingId = b.getListing() != null ? b.getListing().getId() : null;
+        r.customerId = b.getCustomer() != null ? b.getCustomer().getId() : null;
+        r.providerId = b.getProviderId();
+        r.slotId = b.getSlotId();
         r.scheduledAt = b.getScheduledAt();
         r.status = b.getStatus();
+        r.paymentStatus = b.getPaymentStatus();
+        r.paymentRef = b.getPaymentRef();
+        r.paidAt = b.getPaidAt();
         r.address = b.getAddress();
         r.notes = b.getNotes();
+        r.listingTitle = b.getListing() != null ? b.getListing().getTitle() : null;
+        if (b.getListing() != null && b.getListing().getOwner() != null) {
+            r.providerName = b.getListing().getOwner().getName();
+        }
+        r.customerName = b.getCustomer() != null ? b.getCustomer().getName() : null;
+        r.price = b.getListing() != null ? b.getListing().getPrice() : null;
+        r.createdAt = b.getCreatedAt();
         return r;
     }
 
@@ -66,6 +79,24 @@ public class BookingController {
         User me = userService.getByEmail(auth.getName());
         Booking b = bookingService.create(me, req);
         return ResponseEntity.ok(toDto(b));
+    }
+
+    @Operation(summary = "Dummy pay a booking (marks as paid)")
+    @PostMapping("/{id}/pay")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<BookingDtos.Response> pay(@PathVariable Long id, Authentication auth) {
+        User me = userService.getByEmail(auth.getName());
+        Booking b = bookingService.dummyPay(id, me);
+        return ResponseEntity.ok(toDto(b));
+    }
+
+    @Operation(summary = "Provider earnings totals")
+    @GetMapping("/earnings/provider")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<BookingDtos.EarningsResponse> providerEarnings(Authentication auth) {
+        User me = userService.getByEmail(auth.getName());
+        BookingDtos.EarningsResponse resp = bookingService.providerEarnings(me);
+        return ResponseEntity.ok(resp);
     }
 
     @Operation(summary = "List my bookings as customer or provider")
@@ -110,26 +141,33 @@ public class BookingController {
 
     @Operation(summary = "Get booking summaries for homepage")
     @GetMapping("/summary")
-    public List<BookingSummary> summary() {
-        List<Booking> latest = bookingRepository
-                .findAll()
-                .stream()
-                .sorted((a, b) -> b.getScheduledAt().compareTo(a.getScheduledAt()))
-                .limit(5)
-                .toList();
+        public List<BookingSummary> summary(Authentication auth) {
+        User me = auth == null ? null : userService.getByEmail(auth.getName());
+        boolean isAdmin = me != null && me.getRoleNames() != null && me.getRoleNames().contains("ROLE_ADMIN");
+        List<Booking> source = bookingRepository.findAll();
+        if (!isAdmin && me != null) {
+            source = source.stream().filter(b ->
+                (b.getCustomer() != null && b.getCustomer().getId().equals(me.getId())) ||
+                    (b.getProviderId() != null && b.getProviderId().equals(me.getId()))
+            ).toList();
+        }
+        List<Booking> latest = source.stream()
+            .sorted((a, b) -> b.getScheduledAt().compareTo(a.getScheduledAt()))
+            .limit(5)
+            .toList();
 
         return latest.stream().map(b -> new BookingSummary(
-                b.getId(),
-                b.getListing() != null && b.getListing().getCategory() != null
-                        ? b.getListing().getCategory().getName()
-                        : null,
-                b.getListing() != null ? b.getListing().getTitle() : null,
-                b.getCustomer() != null ? b.getCustomer().getName() : null,
-                b.getListing() != null && b.getListing().getOwner() != null
-                        ? b.getListing().getOwner().getName()
-                        : null,
-                b.getStatus() != null ? b.getStatus().name() : null,
-                b.getScheduledAt() != null ? b.getScheduledAt().toString() : null
+            b.getId(),
+            b.getListing() != null && b.getListing().getCategory() != null
+                ? b.getListing().getCategory().getName()
+                : null,
+            b.getListing() != null ? b.getListing().getTitle() : null,
+            b.getCustomer() != null ? b.getCustomer().getName() : null,
+            b.getListing() != null && b.getListing().getOwner() != null
+                ? b.getListing().getOwner().getName()
+                : null,
+            b.getStatus() != null ? b.getStatus().name() : null,
+            b.getScheduledAt() != null ? b.getScheduledAt().toString() : null
         )).collect(Collectors.toList());
-    }
+        }
 }
