@@ -5,10 +5,10 @@ services:
     container_name: servicelink-mysql
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: servicelink
-      MYSQL_USER: sluser
-      MYSQL_PASSWORD: slpass
-      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-servicelink}
+      MYSQL_USER: ${MYSQL_USER:-sluser}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-slpass}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
     ports:
       - "3306:3306"
     healthcheck:

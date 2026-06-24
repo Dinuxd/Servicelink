@@ -50,13 +50,15 @@ public class DataSeeder {
                 return; // database already has data, skip demo seeding
             }
 
+            String demoPassword = System.getenv().getOrDefault("DEMO_USER_PASSWORD", "password");
+
             // Demo users
             User customer = new User();
             customer.setId(seq.generateSequence("users"));
             customer.setName("Demo Customer");
             customer.setEmail("customer@servicelink.local");
             customer.setUsername("customer@servicelink.local");
-            customer.setPassword(encoder.encode("password"));
+            customer.setPassword(encoder.encode(demoPassword));
             customer.setRoleNames(List.of("ROLE_USER"));
             userRepo.save(customer);
 
@@ -65,7 +67,7 @@ public class DataSeeder {
             provider1.setName("Demo Provider One");
             provider1.setEmail("provider1@servicelink.local");
             provider1.setUsername("provider1@servicelink.local");
-            provider1.setPassword(encoder.encode("password"));
+            provider1.setPassword(encoder.encode(demoPassword));
             provider1.setRoleNames(List.of("ROLE_PROVIDER"));
             userRepo.save(provider1);
 
@@ -74,7 +76,7 @@ public class DataSeeder {
             provider2.setName("Demo Provider Two");
             provider2.setEmail("provider2@servicelink.local");
             provider2.setUsername("provider2@servicelink.local");
-            provider2.setPassword(encoder.encode("password"));
+            provider2.setPassword(encoder.encode(demoPassword));
             provider2.setRoleNames(List.of("ROLE_PROVIDER"));
             userRepo.save(provider2);
 
@@ -83,7 +85,7 @@ public class DataSeeder {
             admin.setName("Demo Admin");
             admin.setEmail("admin@servicelink.local");
             admin.setUsername("admin@servicelink.local");
-            admin.setPassword(encoder.encode("password"));
+            admin.setPassword(encoder.encode(demoPassword));
             admin.setRoleNames(List.of("ROLE_ADMIN"));
             userRepo.save(admin);
 

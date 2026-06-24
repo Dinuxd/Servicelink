@@ -19,6 +19,8 @@ public class DevDataResetConfig implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     @Value("${app.dev.reset:false}")
     private boolean resetEnabled;
+    @Value("${app.dev.admin-password:admin}")
+    private String devAdminPassword;
 
     public DevDataResetConfig(UserRepository userRepository, ListingRepository listingRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -36,8 +38,8 @@ public class DevDataResetConfig implements CommandLineRunner {
         admin.setName("Admin");
         admin.setUsername("admin");
         admin.setEmail("admin@servicelink.local");
-        admin.setPassword(passwordEncoder.encode("admin"));
-        admin.setRoleNames(List.of("ADMIN"));
+        admin.setPassword(passwordEncoder.encode(devAdminPassword));
+        admin.setRoleNames(List.of("ROLE_ADMIN"));
         admin.setActive(true);
         userRepository.save(admin);
         System.out.println("[DEV RESET] Database wiped and admin user seeded.");

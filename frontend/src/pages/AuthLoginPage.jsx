@@ -105,7 +105,7 @@ export default function AuthLoginPage() {
             disabled={isSubmitting}
             style={{ justifySelf: 'flex-start', marginTop: 4 }}
           >
-            {isSubmitting ? 'Signing in…' : 'Sign in'}
+            {isSubmitting ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
       </div>

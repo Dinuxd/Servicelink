@@ -111,7 +111,7 @@ export default function AuthRegisterPage() {
             disabled={isSubmitting}
             style={{ justifySelf: 'flex-start', marginTop: 4 }}
           >
-            {isSubmitting ? 'Registering…' : 'Register'}
+            {isSubmitting ? 'Registering...' : 'Register'}
           </button>
         </form>
       </div>

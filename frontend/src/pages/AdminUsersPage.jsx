@@ -22,7 +22,7 @@ export default function AdminUsersPage() {
   return (
     <div className="sl-page-container">
       <div className="sl-page-card-admin" style={{ maxWidth: 860, margin: '0 auto' }}>
-        <h1 className="sl-page-title">Admin · Users</h1>
+        <h1 className="sl-page-title">Admin - Users</h1>
         <div className="sl-page-subtitle">Inspect accounts and toggle access.</div>
 
         <select

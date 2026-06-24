@@ -28,14 +28,14 @@ export default function AdminCategoriesPage() {
   return (
     <div className="sl-page-container">
       <div className="sl-page-card-admin" style={{ maxWidth: 860, margin: '0 auto' }}>
-        <h1 className="sl-page-title">Admin · Categories</h1>
+        <h1 className="sl-page-title">Admin - Categories</h1>
         <div className="sl-page-subtitle">Manage how services are grouped in search.</div>
 
         <div className="sl-stack-h" style={{ marginTop: 16, marginBottom: 16 }}>
           <input className="sl-input" placeholder="Name" value={form.name} onChange={e=>setForm({...form, name: e.target.value})} />
           <input className="sl-input" placeholder="Icon" value={form.icon} onChange={e=>setForm({...form, icon: e.target.value})} />
           <button className="sl-hero-cta-primary" onClick={()=>createMut.mutate()} disabled={createMut.isPending}>
-            {createMut.isPending ? 'Creating…' : 'Create'}
+            {createMut.isPending ? 'Creating...' : 'Create'}
           </button>
         </div>
 

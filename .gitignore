@@ -8,6 +8,8 @@ mongo-backup/
 node_modules/
 dist/
 build/
+target/
+**/target/
 .env
 .env.*
 *.dump
